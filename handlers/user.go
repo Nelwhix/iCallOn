@@ -1,18 +1,16 @@
 package handlers
 
 import (
-	"encoding/json"
 	"github.com/Nelwhix/iCallOn/pkg"
 	"github.com/Nelwhix/iCallOn/pkg/models"
 	"github.com/Nelwhix/iCallOn/pkg/requests"
 	"github.com/Nelwhix/iCallOn/pkg/responses"
 	"golang.org/x/crypto/bcrypt"
-	"io"
 	"net/http"
 )
 
 func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
-	request, err := pkg.ParseRequestBody[requests.SignUp](w, r)
+	request, err := pkg.ParseRequestBody[requests.SignUp](r)
 	if err != nil {
 		responses.NewUnprocessableEntity(w, err.Error())
 
@@ -39,7 +37,7 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.Model.InsertIntoUsers(r.Context(), request)
 	if err != nil {
-		responses.NewInternalServerErrorResponse(w, err.Error())
+		responses.NewInternalServerError(w, err.Error())
 		return
 	}
 
@@ -56,15 +54,14 @@ func (h *Handler) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
+	request, err := pkg.ParseRequestBody[requests.Login](r)
 	if err != nil {
 		responses.NewUnprocessableEntity(w, err.Error())
+
 		return
 	}
-	defer r.Body.Close()
 
-	var request requests.Login
-	err = json.Unmarshal(body, &request)
+	err = h.Validator.Struct(request)
 	if err != nil {
 		responses.NewUnprocessableEntity(w, err.Error())
 		return
@@ -82,9 +79,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := pkg.CreateToken(h.Model, user.ID)
+	token, err := pkg.GetOrCreateToken(h.Model, user.ID)
 	if err != nil {
-		responses.NewInternalServerErrorResponse(w, err.Error())
+		responses.NewInternalServerError(w, err.Error())
 		return
 	}
 
@@ -104,7 +101,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Me(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value("user").(models.User)
 	if !ok {
-		responses.NewInternalServerErrorResponse(w, "User not found")
+		responses.NewInternalServerError(w, "User not found")
 		return
 	}
 

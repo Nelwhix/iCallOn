@@ -31,7 +31,7 @@ func (a *AuthMiddleware) Register(handlerFunc func(w http.ResponseWriter, r *htt
 
 		user, err := a.Model.GetUserByToken(r.Context(), parts[1])
 		if err != nil {
-			responses.NewInternalServerErrorResponse(w, err.Error())
+			responses.NewUnauthorized(w, "Unauthorized.")
 			return
 		}
 

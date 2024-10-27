@@ -12,6 +12,7 @@ type Login struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type ValidateOtp struct {
-	Code string `json:"code" validate:"required,len=6"`
+type NewGame struct {
+	RoundLength int    `json:"roundLength" validate:"number"`
+	UserID      string `json:"userID"`
 }

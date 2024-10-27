@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func ParseRequestBody[T any](w http.ResponseWriter, r *http.Request) (T, error) {
+func ParseRequestBody[T any](r *http.Request) (T, error) {
 	var requestData T
 
 	body, err := io.ReadAll(r.Body)

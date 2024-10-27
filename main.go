@@ -66,6 +66,7 @@ func main() {
 
 	// Auth routes
 	r.Handle("GET /api/me", m.Register(handler.Me))
+	r.Handle("POST /api/games", m.Register(handler.CreateNewGame))
 
 	fmt.Printf("iCallOn started at http://localhost:%s\n", ServerPort)
 

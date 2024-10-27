@@ -32,7 +32,7 @@ func (m *Model) InsertIntoTokens(ctx context.Context, request CreateTokenRequest
 
 func (m *Model) FindToken(ctx context.Context, token string) (Token, error) {
 	var cToken Token
-	row := m.Conn.QueryRow(ctx, "select user_id, expires_at, last_used_at, updated_at FROM personal_access_tokens WHERE token = $1", token)
+	row := m.Conn.QueryRow(ctx, "select user_id, expires_at, last_used_at, updated_at FROM personal_access_tokens WHERE token = $1 AND expires_at > NOW()", token)
 	err := row.Scan(&cToken.UserID, &cToken.ExpiresAt, &cToken.LastUsedAt, &cToken.UpdatedAt)
 	if err != nil {
 		return Token{}, err
@@ -49,4 +49,15 @@ func (m *Model) UpdateToken(ctx context.Context, token Token) error {
 	}
 
 	return nil
+}
+
+func (m *Model) FindValidTokenForUser(ctx context.Context, userID string) (Token, error) {
+	var cToken Token
+	row := m.Conn.QueryRow(ctx, "SELECT token FROM personal_access_tokens WHERE user_id = $1 AND expires_at > NOW()", userID)
+	err := row.Scan(&cToken.Token)
+	if err != nil {
+		return Token{}, err
+	}
+
+	return cToken, nil
 }

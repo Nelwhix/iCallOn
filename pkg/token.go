@@ -17,7 +17,14 @@ func generateTokenString() string {
 	return fmt.Sprintf("%s%x", tokenEntropy, crc32bHash)
 }
 
-func CreateToken(m models.Model, userID string) (string, error) {
+func GetOrCreateToken(m models.Model, userID string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+	cToken, err := m.FindValidTokenForUser(ctx, userID)
+	if err == nil {
+		return cToken.Token, nil
+	}
+
 	expires := time.Now().Add(24 * time.Hour * 7)
 	tokenString := generateTokenString()
 	request := models.CreateTokenRequest{
@@ -26,10 +33,7 @@ func CreateToken(m models.Model, userID string) (string, error) {
 		ExpiresAt: expires,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
-	defer cancel()
-
-	err := m.InsertIntoTokens(ctx, request)
+	err = m.InsertIntoTokens(ctx, request)
 	if err != nil {
 		return "", err
 	}

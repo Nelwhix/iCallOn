@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 type baseResponse struct {
@@ -32,6 +33,18 @@ type UserWithToken struct {
 	Attributes UserAttributesWithToken `json:"attributes"`
 }
 
+type Game struct {
+	ID         string         `json:"id"`
+	Type       string         `json:"type"`
+	Attributes GameAttributes `json:"attributes"`
+}
+
+type GameAttributes struct {
+	UserID      string    `json:"userID"`
+	RoundLength int       `json:"roundLength"`
+	CreatedAt   time.Time `json:"createdAt"`
+}
+
 type UserAttributesWithToken struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -42,7 +55,7 @@ type GenerateOtp struct {
 	OtpUrl string `json:"otpUrl"`
 }
 
-func NewInternalServerErrorResponse(w http.ResponseWriter, message string) {
+func NewInternalServerError(w http.ResponseWriter, message string) {
 	w.WriteHeader(http.StatusInternalServerError)
 	response := baseResponse{
 		Message: message,
